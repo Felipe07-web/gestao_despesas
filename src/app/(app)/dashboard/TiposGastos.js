@@ -122,6 +122,7 @@ const TiposGastos = () => {
                     {editingId ? "Atualizar" : "Adicionar"}
                 </button>
             </form>
+            
 
             {/* Tabela de Tipos de Gastos */}
             <div className="overflow-hidden border border-gray-200 rounded-lg">
@@ -156,6 +157,7 @@ const TiposGastos = () => {
                 </table>
             </div>
         </div>
+        
     );
 };
 
