@@ -20,7 +20,7 @@ const Contratos = () => {
         fetchContratos();
     }, []);
 
-    // 🔹 Buscar contratos (GET)
+    
     const fetchContratos = async () => {
         try {
             const response = await axios.get("http://localhost/api/contratos", {
@@ -34,30 +34,42 @@ const Contratos = () => {
         }
     };
 
-    // 🔹 Atualizar o estado do formulário
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    // 🔹 Criar ou Editar um contrato (POST/PUT)
+   
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (Object.values(formData).some((field) => String(field).trim() === "")) {
-            alert("Todos os campos são obrigatórios.");
-            return;
-        }
-
+    
         try {
-            const url = editingId ? `http://localhost/api/contratos/${editingId}` : "http://localhost/api/contratos";
+            await axios.get("http://127.0.0.1/sanctum/csrf-cookie"); // 🔹 CSRF obrigatório se estiver autenticado
+    
+            const url = editingId ? `http://127.0.0.1/api/contratos/${editingId}` : `http://127.0.0.1/api/contratos`;
             const method = editingId ? "PUT" : "POST";
-
-            await axios({
+    
+            const formattedData = {
+                contrato: formData.contrato,
+                empresa: formData.empresa,
+                horas_medias: parseFloat(formData.horas_medias),
+                salario: parseFloat(formData.salario),
+                descontos: formData.descontos ? parseFloat(formData.descontos) : 0,
+                beneficio: formData.beneficio ? parseFloat(formData.beneficio) : 0,
+            };
+    
+            console.log("🔹 Enviando requisição para:", url);
+            console.log("📦 Dados enviados:", formattedData);
+    
+            const response = await axios({
                 method,
                 url,
-                data: formData,
+                data: formattedData,
                 withCredentials: true,
+                headers: { "Content-Type": "application/json" },
             });
-
+    
+            console.log("✅ Contrato salvo com sucesso:", response.data);
+            alert("Contrato cadastrado!");
             fetchContratos();
             setFormData({
                 contrato: "",
@@ -69,12 +81,17 @@ const Contratos = () => {
             });
             setEditingId(null);
         } catch (error) {
-            console.error("Erro ao salvar contrato:", error);
-            alert("Erro ao salvar contrato.");
+            if (error.response) {
+                console.error("❌ Erro ao salvar contrato:", error.response.data);
+                alert(`Erro ao salvar contrato: ${JSON.stringify(error.response.data.errors)}`);
+            } else {
+                console.error("❌ Erro ao salvar contrato:", error);
+                alert("Erro desconhecido ao salvar contrato.");
+            }
         }
     };
-
-    // 🔹 Editar um contrato
+    
+    
     const handleEdit = (contrato) => {
         setFormData({
             contrato: contrato.contrato,

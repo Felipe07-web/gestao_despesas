@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-// ✅ Configuração do Axios para permitir envio de cookies e autenticação
-axios.defaults.withCredentials = true;
+// ✅ Configurar Axios globalmente
+axios.defaults.withCredentials = true; // 🔹 Permite cookies e autenticação
+axios.defaults.baseURL = process.env.REACT_APP_API_URL || "http://127.0.0.1/api"; // 🔹 Define URL base
+axios.defaults.headers.common["Accept"] = "application/json";
+axios.defaults.headers.common["Content-Type"] = "application/json";
 
 const Cartoes = () => {
   const [cartoes, setCartoes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState({
-    numero: "",
+    cartao: "",
     banco: "",
     limite: "",
     vencimento: "",
@@ -19,33 +22,23 @@ const Cartoes = () => {
     fetchCartoes();
   }, []);
 
-  // ✅ Buscar o token CSRF antes de fazer requisições POST, PUT ou DELETE
+  // ✅ Buscar CSRF antes de enviar requisições protegidas
   const getCsrfToken = async () => {
     try {
-      await axios.get("http://127.0.0.1/sanctum/csrf-cookie");
+      await axios.get("/sanctum/csrf-cookie");
     } catch (error) {
-      console.error("Erro ao obter token CSRF:", error);
+      console.error("❌ Erro ao obter token CSRF:", error);
     }
   };
 
-  // ✅ Buscar os cartões salvos no backend
+  // ✅ Buscar cartões do backend
   const fetchCartoes = async () => {
     try {
-      const response = await fetch("http://127.0.0.1/api/cartoes");
-      if (!response.ok) {
-        throw new Error(`Erro ao buscar cartões: ${response.status} ${response.statusText}`);
-      }
-      const data = await response.json();
-
-      const formattedData = data.map(cartao => ({
-        ...cartao,
-        vencimento: `2025-02-${String(cartao.data_vencimento).padStart(2, "0")}`,
-      }));
-
-      setCartoes(formattedData);
+      const response = await axios.get("/cartoes");
+      setCartoes(response.data);
     } catch (error) {
-      console.error("Erro ao buscar cartões:", error);
-      alert("Erro ao buscar cartões. Verifique o console.");
+      console.error("❌ Erro ao buscar cartões:", error);
+      alert("Erro ao buscar cartões.");
     } finally {
       setIsLoading(false);
     }
@@ -59,55 +52,52 @@ const Cartoes = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (Object.values(formData).some(field => String(field).trim() === "")) {
+    if (Object.values(formData).some((field) => String(field).trim() === "")) {
       alert("Todos os campos são obrigatórios.");
       return;
     }
 
     try {
-      const url = editingId ? `http://127.0.0.1/api/cartoes/${editingId}` : `http://127.0.0.1/api/cartoes`;
-      const method = editingId ? "PUT" : "POST";
+      await getCsrfToken(); // 🔹 Obtém CSRF antes da requisição
+
+      const url = editingId ? `/cartoes/${editingId}` : `/cartoes`;
+      const method = editingId ? "put" : "post";
 
       const formattedData = {
-        cartao: formData.numero,
+        cartao: formData.cartao,
         banco: formData.banco,
         limite: parseFloat(formData.limite),
         bandeira: "Visa",
-        data_vencimento: parseInt(formData.vencimento.split("-")[2]),
+        data_vencimento: formData.vencimento,
       };
 
-      console.log("🔹 Enviando requisição para:", url);
+      console.log("🔹 Enviando requisição para:", axios.defaults.baseURL + url);
       console.log("📦 Dados enviados:", formattedData);
 
-      await getCsrfToken(); // ✅ Obtém o token CSRF antes da requisição
-
-      const response = await fetch(url, {
-        method: method,
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formattedData),
+      const response = await axios({
+        method,
+        url,
+        data: formattedData,
       });
 
-      if (!response.ok) {
-        throw new Error(`Erro ao salvar cartão: ${response.status} ${response.statusText}`);
-      }
+      console.log("✅ Resposta do servidor:", response.data);
 
       fetchCartoes();
-      setFormData({ numero: "", banco: "", limite: "", vencimento: "" });
+      setFormData({ cartao: "", banco: "", limite: "", vencimento: "" });
       setEditingId(null);
       alert("Cartão salvo com sucesso!");
     } catch (error) {
-      console.error("Erro ao salvar:", error);
-      alert(`Erro ao salvar o cartão: ${error.message}`);
+      console.error("❌ Erro ao salvar cartão:", error);
+      alert(`Erro ao salvar cartão: ${error.message}`);
     }
   };
 
   const handleEdit = (cartao) => {
     setFormData({
-      numero: cartao.cartao,
+      cartao: cartao.cartao,
       banco: cartao.banco,
       limite: cartao.limite,
-      vencimento: cartao.vencimento,
+      vencimento: cartao.data_vencimento,
     });
     setEditingId(cartao.id);
   };
@@ -115,22 +105,13 @@ const Cartoes = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Tem certeza que deseja excluir este cartão?")) {
       try {
-        await getCsrfToken(); // ✅ Obtém o token CSRF antes da requisição
+        await getCsrfToken(); // 🔹 Obtém CSRF antes da requisição
 
-        const response = await fetch(`http://127.0.0.1/api/cartoes/${id}`, {
-          method: "DELETE",
-          credentials: "include",
-          headers: { "Accept": "application/json" },
-        });
-
-        if (!response.ok) {
-          throw new Error(`Erro ao excluir cartão: ${response.status} ${response.statusText}`);
-        }
-
+        await axios.delete(`/cartoes/${id}`);
         fetchCartoes();
         alert("Cartão excluído com sucesso!");
       } catch (error) {
-        console.error("Erro ao excluir:", error);
+        console.error("❌ Erro ao excluir cartão:", error);
         alert(`Erro ao excluir o cartão: ${error.message}`);
       }
     }
@@ -145,7 +126,7 @@ const Cartoes = () => {
       <h1 className="text-3xl font-extrabold mb-6 text-gray-900 tracking-tight">Gestão de Cartões</h1>
 
       <form onSubmit={handleSubmit} className="mb-6 flex flex-wrap gap-4">
-        <input name="numero" type="text" value={formData.numero} onChange={handleInputChange} placeholder="Número do Cartão" className="border p-2 rounded w-full md:w-1/4" required />
+        <input name="cartao" type="text" value={formData.cartao} onChange={handleInputChange} placeholder="Número do Cartão" className="border p-2 rounded w-full md:w-1/4" required />
         <input name="banco" type="text" value={formData.banco} onChange={handleInputChange} placeholder="Banco" className="border p-2 rounded w-full md:w-1/4" required />
         <input name="limite" type="number" step="0.01" value={formData.limite} onChange={handleInputChange} placeholder="Limite" className="border p-2 rounded w-full md:w-1/4" required />
         <input name="vencimento" type="date" value={formData.vencimento} onChange={handleInputChange} className="border p-2 rounded w-full md:w-1/4" required />
@@ -173,9 +154,7 @@ const Cartoes = () => {
                 <td className="px-6 py-4 text-right font-medium text-green-600">
                   {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cartao.limite)}
                 </td>
-                <td className="px-6 py-4 text-center text-gray-700">
-                  {cartao.vencimento.split("-").reverse().join("/")}
-                </td>
+                <td className="px-6 py-4 text-center text-gray-700">{cartao.data_vencimento}</td>
                 <td className="px-6 py-4 flex gap-2">
                   <button onClick={() => handleEdit(cartao)} className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition">Editar</button>
                   <button onClick={() => handleDelete(cartao.id)} className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition">Excluir</button>
