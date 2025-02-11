@@ -102,6 +102,7 @@ const Cartoes = () => {
     setEditingId(cartao.id);
   };
 
+  
   const handleDelete = async (id) => {
     if (window.confirm("Tem certeza que deseja excluir este cartão?")) {
       try {
