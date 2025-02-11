@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -20,7 +22,7 @@ const TiposGastos = () => {
         fetchTiposGastos();
     }, []);
 
-    // 🔹 Buscar tipos de gastos (GET)
+    // 🔄 Buscar tipos de gastos da API
     const fetchTiposGastos = async () => {
         try {
             const response = await axios.get("http://localhost/api/tipos-gastos", {
@@ -34,21 +36,23 @@ const TiposGastos = () => {
         }
     };
 
-    // 🔹 Atualizar o estado do formulário
+    // ✏ Atualizar estado do formulário
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    // 🔹 Criar ou Editar um tipo de gasto (POST/PUT)
+    // 💾 Criar ou atualizar tipo de gasto
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (Object.values(formData).some((field) => String(field).trim() === "")) {
+        if (!formData.indice_tipo || !formData.tipo || !formData.indice_subtipo_1 || !formData.subtipo_1 || !formData.indice_subtipo_2 || !formData.subtipo_2) {
             alert("Todos os campos são obrigatórios.");
             return;
         }
 
         try {
-            const url = editingId ? `http://localhost/api/tipos-gastos/${editingId}` : "http://localhost/api/tipos-gastos";
+            const url = editingId
+                ? `http://localhost/api/tipos-gastos/${editingId}`
+                : "http://localhost/api/tipos-gastos";
             const method = editingId ? "PUT" : "POST";
 
             await axios({
@@ -74,7 +78,7 @@ const TiposGastos = () => {
         }
     };
 
-    // 🔹 Editar um tipo de gasto
+    // 📝 Editar tipo de gasto
     const handleEdit = (gasto) => {
         setFormData({
             indice_tipo: gasto.indice_tipo,
@@ -87,9 +91,9 @@ const TiposGastos = () => {
         setEditingId(gasto.id);
     };
 
-    // 🔹 Excluir tipo de gasto (DELETE)
+    // 🗑 Excluir tipo de gasto
     const handleDelete = async (id) => {
-        if (window.confirm("Tem certeza que deseja excluir este registro?")) {
+        if (window.confirm("Tem certeza que deseja excluir este tipo de gasto?")) {
             try {
                 await axios.delete(`http://localhost/api/tipos-gastos/${id}`, {
                     withCredentials: true,
@@ -107,57 +111,114 @@ const TiposGastos = () => {
     }
 
     return (
-        <div className="p-8 bg-white shadow-xl rounded-xl">
-            <h1 className="text-3xl font-extrabold mb-6 text-gray-900 tracking-tight">Gerenciamento de Tipos de Gastos</h1>
+        <div className="min-h-screen bg-gray-100 p-8">
+            {/* Cabeçalho */}
+            <header className="bg-blue-900 text-white p-6 rounded-lg shadow-lg text-center">
+                <h1 className="text-3xl font-bold">Gerenciamento de Tipos de Gastos</h1>
+                <p className="text-gray-300 mt-2">
+                    Adicione, edite e gerencie os tipos de gastos cadastrados.
+                </p>
+            </header>
 
-            {/* Formulário de Cadastro/Edição */}
-            <form onSubmit={handleSubmit} className="mb-6 flex flex-wrap gap-4">
-                <input name="indice_tipo" type="number" placeholder="Índice Tipo" value={formData.indice_tipo} onChange={handleInputChange} className="border p-2 rounded w-full md:w-1/4" required />
-                <input name="tipo" type="text" placeholder="Tipo" value={formData.tipo} onChange={handleInputChange} className="border p-2 rounded w-full md:w-1/4" required />
-                <input name="indice_subtipo_1" type="number" placeholder="Índice Subtipo 1" value={formData.indice_subtipo_1} onChange={handleInputChange} className="border p-2 rounded w-full md:w-1/4" required />
-                <input name="subtipo_1" type="text" placeholder="Subtipo 1" value={formData.subtipo_1} onChange={handleInputChange} className="border p-2 rounded w-full md:w-1/4" required />
-                <input name="indice_subtipo_2" type="number" placeholder="Índice Subtipo 2" value={formData.indice_subtipo_2} onChange={handleInputChange} className="border p-2 rounded w-full md:w-1/4" required />
-                <input name="subtipo_2" type="text" placeholder="Subtipo 2" value={formData.subtipo_2} onChange={handleInputChange} className="border p-2 rounded w-full md:w-1/4" required />
-                <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-                    {editingId ? "Atualizar" : "Adicionar"}
-                </button>
-            </form>
-            
+            {/* Formulário */}
+            <div className="mt-10 bg-white p-6 rounded-lg shadow-lg">
+                <h2 className="text-2xl font-semibold mb-4 text-gray-800">
+                    {editingId ? "Editar Tipo de Gasto" : "Adicionar Tipo de Gasto"}
+                </h2>
+                <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <input
+                        name="indice_tipo"
+                        type="number"
+                        value={formData.indice_tipo}
+                        onChange={handleInputChange}
+                        placeholder="Índice Tipo"
+                        className="border p-2 rounded"
+                        required
+                    />
+                    <input
+                        name="tipo"
+                        type="text"
+                        value={formData.tipo}
+                        onChange={handleInputChange}
+                        placeholder="Tipo"
+                        className="border p-2 rounded"
+                        required
+                    />
+                    <input
+                        name="indice_subtipo_1"
+                        type="number"
+                        value={formData.indice_subtipo_1}
+                        onChange={handleInputChange}
+                        placeholder="Índice Subtipo 1"
+                        className="border p-2 rounded"
+                        required
+                    />
+                    <input
+                        name="subtipo_1"
+                        type="text"
+                        value={formData.subtipo_1}
+                        onChange={handleInputChange}
+                        placeholder="Subtipo 1"
+                        className="border p-2 rounded"
+                        required
+                    />
+                    <input
+                        name="indice_subtipo_2"
+                        type="number"
+                        value={formData.indice_subtipo_2}
+                        onChange={handleInputChange}
+                        placeholder="Índice Subtipo 2"
+                        className="border p-2 rounded"
+                        required
+                    />
+                    <input
+                        name="subtipo_2"
+                        type="text"
+                        value={formData.subtipo_2}
+                        onChange={handleInputChange}
+                        placeholder="Subtipo 2"
+                        className="border p-2 rounded"
+                        required
+                    />
+                    <button
+                        type="submit"
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition col-span-full"
+                    >
+                        {editingId ? "Atualizar" : "Adicionar"}
+                    </button>
+                </form>
+            </div>
 
             {/* Tabela de Tipos de Gastos */}
-            <div className="overflow-hidden border border-gray-200 rounded-lg">
-                <table className="w-full table-auto">
-                    <thead className="bg-gray-50 text-gray-700 uppercase text-sm tracking-wider">
+            <div className="mt-10 bg-white p-6 rounded-lg shadow-lg">
+                <h2 className="text-2xl font-semibold mb-4 text-gray-800">Lista de Tipos de Gastos</h2>
+                <table className="w-full border-collapse rounded-lg">
+                    <thead className="bg-gray-200">
                         <tr>
-                            <th className="px-6 py-3 text-left font-medium">Índice Tipo</th>
-                            <th className="px-6 py-3 text-left font-medium">Tipo</th>
-                            <th className="px-6 py-3 text-left font-medium">Índice Subtipo 1</th>
-                            <th className="px-6 py-3 text-left font-medium">Subtipo 1</th>
-                            <th className="px-6 py-3 text-left font-medium">Índice Subtipo 2</th>
-                            <th className="px-6 py-3 text-left font-medium">Subtipo 2</th>
-                            <th className="px-6 py-3 text-left font-medium">Ações</th>
+                            <th className="px-4 py-3 text-left">Índice Tipo</th>
+                            <th className="px-4 py-3 text-left">Tipo</th>
+                            <th className="px-4 py-3 text-left">Índice Subtipo 1</th>
+                            <th className="px-4 py-3 text-left">Subtipo 1</th>
+                            <th className="px-4 py-3 text-left">Índice Subtipo 2</th>
+                            <th className="px-4 py-3 text-left">Subtipo 2</th>
+                            <th className="px-4 py-3 text-left">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {tiposGastos.map((gasto, index) => (
-                            <tr key={gasto.id} className={`${index % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-gray-100 transition-all duration-200`}>
-                                <td className="px-6 py-4 text-gray-800">{gasto.indice_tipo}</td>
-                                <td className="px-6 py-4 text-gray-700">{gasto.tipo}</td>
-                                <td className="px-6 py-4 text-gray-700">{gasto.indice_subtipo_1}</td>
-                                <td className="px-6 py-4 text-gray-700">{gasto.subtipo_1}</td>
-                                <td className="px-6 py-4 text-gray-700">{gasto.indice_subtipo_2}</td>
-                                <td className="px-6 py-4 text-gray-700">{gasto.subtipo_2}</td>
-                                <td className="px-6 py-4 flex gap-2">
-                                    <button onClick={() => handleEdit(gasto)} className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition">Editar</button>
-                                    <button onClick={() => handleDelete(gasto.id)} className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition">Excluir</button>
-                                </td>
+                        {tiposGastos.map((gasto) => (
+                            <tr key={gasto.id} className="border-t hover:bg-gray-100 transition">
+                                <td className="px-4 py-3">{gasto.indice_tipo}</td>
+                                <td className="px-4 py-3">{gasto.tipo}</td>
+                                <td className="px-4 py-3">{gasto.indice_subtipo_1}</td>
+                                <td className="px-4 py-3">{gasto.subtipo_1}</td>
+                                <td className="px-4 py-3">{gasto.indice_subtipo_2}</td>
+                                <td className="px-4 py-3">{gasto.subtipo_2}</td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
             </div>
         </div>
-        
     );
 };
 

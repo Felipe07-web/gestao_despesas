@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -18,7 +20,7 @@ const Recebimentos = () => {
         fetchRecebimentos();
     }, []);
 
-    
+    // 🔄 Buscar recebimentos da API
     const fetchRecebimentos = async () => {
         try {
             const response = await axios.get("http://localhost/api/recebimentos", {
@@ -32,12 +34,12 @@ const Recebimentos = () => {
         }
     };
 
-   
+    // ✏ Atualizar estado do formulário
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    
+    // 💾 Salvar ou atualizar recebimento
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (Object.values(formData).some((field) => String(field).trim() === "")) {
@@ -46,7 +48,9 @@ const Recebimentos = () => {
         }
 
         try {
-            const url = editingId ? `http://localhost/api/recebimentos/${editingId}` : "http://localhost/api/recebimentos";
+            const url = editingId
+                ? `http://localhost/api/recebimentos/${editingId}`
+                : "http://localhost/api/recebimentos";
             const method = editingId ? "PUT" : "POST";
 
             await axios({
@@ -57,12 +61,7 @@ const Recebimentos = () => {
             });
 
             fetchRecebimentos();
-            setFormData({
-                data: "",
-                fonte: "",
-                referente: "",
-                valor: "",
-            });
+            setFormData({ data: "", fonte: "", referente: "", valor: "" });
             setEditingId(null);
         } catch (error) {
             console.error("Erro ao salvar recebimento:", error);
@@ -70,7 +69,7 @@ const Recebimentos = () => {
         }
     };
 
-   
+    // 📝 Editar recebimento
     const handleEdit = (recebimento) => {
         setFormData({
             data: recebimento.data,
@@ -81,7 +80,7 @@ const Recebimentos = () => {
         setEditingId(recebimento.id);
     };
 
-    
+    // 🗑 Excluir recebimento
     const handleDelete = async (id) => {
         if (window.confirm("Tem certeza que deseja excluir este recebimento?")) {
             try {
@@ -101,43 +100,104 @@ const Recebimentos = () => {
     }
 
     return (
-        <div className="p-8 bg-white shadow-xl rounded-xl">
-            <h1 className="text-3xl font-extrabold mb-6 text-gray-900 tracking-tight">Gerenciamento de Recebimentos</h1>
+        <div className="min-h-screen bg-gray-100 p-8">
+            {/* Cabeçalho */}
+            <header className="bg-blue-900 text-white p-6 rounded-lg shadow-lg text-center">
+                <h1 className="text-3xl font-bold">Gerenciamento de Recebimentos</h1>
+                <p className="text-gray-300 mt-2">
+                    Acompanhe e registre seus recebimentos de forma organizada.
+                </p>
+            </header>
 
-            <form onSubmit={handleSubmit} className="mb-6 flex flex-wrap gap-4">
-                <input name="data" type="date" placeholder="Data" value={formData.data} onChange={handleInputChange} className="border p-2 rounded w-full md:w-1/4" required />
-                <input name="fonte" type="text" placeholder="Fonte" value={formData.fonte} onChange={handleInputChange} className="border p-2 rounded w-full md:w-1/4" required />
-                <input name="referente" type="text" placeholder="Referente" value={formData.referente} onChange={handleInputChange} className="border p-2 rounded w-full md:w-1/4" required />
-                <input name="valor" type="number" step="0.01" placeholder="Valor" value={formData.valor} onChange={handleInputChange} className="border p-2 rounded w-full md:w-1/4" required />
-                <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-                    {editingId ? "Atualizar" : "Adicionar"}
-                </button>
-            </form>
+            {/* Formulário */}
+            <div className="mt-10 bg-white p-6 rounded-lg shadow-lg">
+                <h2 className="text-2xl font-semibold mb-4 text-gray-800">
+                    {editingId ? "Editar Recebimento" : "Adicionar Recebimento"}
+                </h2>
+                <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <input
+                        name="data"
+                        type="date"
+                        value={formData.data}
+                        onChange={handleInputChange}
+                        className="border p-2 rounded"
+                        required
+                    />
+                    <input
+                        name="fonte"
+                        type="text"
+                        value={formData.fonte}
+                        onChange={handleInputChange}
+                        placeholder="Fonte"
+                        className="border p-2 rounded"
+                        required
+                    />
+                    <input
+                        name="referente"
+                        type="text"
+                        value={formData.referente}
+                        onChange={handleInputChange}
+                        placeholder="Referente"
+                        className="border p-2 rounded"
+                        required
+                    />
+                    <input
+                        name="valor"
+                        type="number"
+                        step="0.01"
+                        value={formData.valor}
+                        onChange={handleInputChange}
+                        placeholder="Valor"
+                        className="border p-2 rounded"
+                        required
+                    />
+                    <button
+                        type="submit"
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition"
+                    >
+                        {editingId ? "Atualizar" : "Adicionar"}
+                    </button>
+                </form>
+            </div>
 
-           
-            <div className="overflow-hidden border border-gray-200 rounded-lg">
-                <table className="w-full table-auto">
-                    <thead className="bg-gray-50 text-gray-700 uppercase text-sm tracking-wider">
+            {/* Tabela de Recebimentos */}
+            <div className="mt-10 bg-white p-6 rounded-lg shadow-lg">
+                <h2 className="text-2xl font-semibold mb-4 text-gray-800">Lista de Recebimentos</h2>
+                <table className="w-full border-collapse rounded-lg">
+                    <thead className="bg-gray-200">
                         <tr>
                             <th className="px-6 py-3 text-left font-medium">Data</th>
                             <th className="px-6 py-3 text-left font-medium">Fonte</th>
                             <th className="px-6 py-3 text-left font-medium">Referente</th>
                             <th className="px-6 py-3 text-right font-medium">Valor</th>
-                            <th className="px-6 py-3 text-left font-medium">Ações</th>
+                            <th className="px-6 py-3 text-center font-medium">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {recebimentos.map((recebimento, index) => (
-                            <tr key={recebimento.id} className={`${index % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-gray-100 transition-all duration-200`}>
-                                <td className="px-6 py-4 text-gray-700 text-sm">{recebimento.data}</td>
-                                <td className="px-6 py-4 text-gray-700">{recebimento.fonte}</td>
-                                <td className="px-6 py-4 text-gray-700">{recebimento.referente}</td>
-                                <td className="px-6 py-4 text-right font-medium text-green-600">
-                                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(recebimento.valor)}
+                        {recebimentos.map((recebimento) => (
+                            <tr key={recebimento.id} className="border-t hover:bg-gray-100 transition">
+                                <td className="px-6 py-4">{recebimento.data}</td>
+                                <td className="px-6 py-4">{recebimento.fonte}</td>
+                                <td className="px-6 py-4">{recebimento.referente}</td>
+                                <td className="px-6 py-4 text-right text-green-600 font-medium">
+                                    {new Intl.NumberFormat("pt-BR", {
+                                        style: "currency",
+                                        currency: "BRL",
+                                    }).format(recebimento.valor)}
                                 </td>
-                                <td className="px-6 py-4 flex gap-2">
-                                    <button onClick={() => handleEdit(recebimento)} className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition">Editar</button>
-                                    <button onClick={() => handleDelete(recebimento.id)} className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition">Excluir</button>
+                                <td className="px-6 py-4 flex justify-center space-x-2">
+                                    <button
+                                        onClick={() => handleEdit(recebimento)}
+                                        className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition"
+                                    >
+                                        Editar
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(recebimento.id)}
+                                        className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition"
+                                    >
+                                        Excluir
+                                    </button>
                                 </td>
                             </tr>
                         ))}

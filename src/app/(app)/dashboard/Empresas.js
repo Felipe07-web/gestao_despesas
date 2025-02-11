@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 
 const Empresas = () => {
@@ -14,7 +16,7 @@ const Empresas = () => {
         fetchEmpresas();
     }, []);
 
-    // 🔹 Função para buscar todas as empresas (GET)
+    // 🔄 Buscar empresas da API
     const fetchEmpresas = async () => {
         try {
             const response = await fetch("http://localhost/api/empresas", {
@@ -29,12 +31,12 @@ const Empresas = () => {
         }
     };
 
-    // 🔹 Atualiza os valores do formulário
+    // ✏ Atualizar estado do formulário
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    // 🔹 Criar ou Editar uma empresa (POST/PUT)
+    // 💾 Salvar ou atualizar empresa
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!formData.empresa || !formData.nome || !formData.tipo_contrato) {
@@ -43,7 +45,9 @@ const Empresas = () => {
         }
 
         try {
-            const url = editingId ? `http://localhost/api/empresas/${editingId}` : "http://localhost/api/empresas";
+            const url = editingId
+                ? `http://localhost/api/empresas/${editingId}`
+                : "http://localhost/api/empresas";
             const method = editingId ? "PUT" : "POST";
 
             const response = await fetch(url, {
@@ -64,7 +68,7 @@ const Empresas = () => {
         }
     };
 
-    // 🔹 Preenche o formulário ao editar
+    // 📝 Editar empresa
     const handleEdit = (empresa) => {
         setFormData({
             empresa: empresa.empresa,
@@ -74,7 +78,7 @@ const Empresas = () => {
         setEditingId(empresa.id);
     };
 
-    // 🔹 Excluir empresa (DELETE)
+    // 🗑 Excluir empresa
     const handleDelete = async (id) => {
         if (window.confirm("Tem certeza que deseja excluir esta empresa?")) {
             try {
@@ -98,47 +102,62 @@ const Empresas = () => {
     }
 
     return (
-        <div className="p-8 bg-white shadow-xl rounded-xl">
-            <h1 className="text-3xl font-extrabold mb-6 text-gray-900 tracking-tight">Empresas</h1>
+        <div className="min-h-screen bg-gray-100 p-8">
+            {/* Cabeçalho */}
+            <header className="bg-blue-900 text-white p-6 rounded-lg shadow-lg text-center">
+                <h1 className="text-3xl font-bold">Gerenciamento de Empresas</h1>
+                <p className="text-gray-300 mt-2">
+                    Adicione, edite e gerencie empresas cadastradas no sistema.
+                </p>
+            </header>
 
-            {/* Formulário de Cadastro/Edição */}
-            <form onSubmit={handleSubmit} className="mb-6 flex flex-wrap gap-4">
-                <input
-                    name="empresa"
-                    type="text"
-                    placeholder="Empresa"
-                    value={formData.empresa}
-                    onChange={handleInputChange}
-                    className="border p-2 rounded w-full md:w-1/3"
-                    required
-                />
-                <input
-                    name="nome"
-                    type="text"
-                    placeholder="Nome"
-                    value={formData.nome}
-                    onChange={handleInputChange}
-                    className="border p-2 rounded w-full md:w-1/3"
-                    required
-                />
-                <input
-                    name="tipo_contrato"
-                    type="text"
-                    placeholder="Tipo de Contrato"
-                    value={formData.tipo_contrato}
-                    onChange={handleInputChange}
-                    className="border p-2 rounded w-full md:w-1/3"
-                    required
-                />
-                <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-                    {editingId ? "Atualizar" : "Adicionar"}
-                </button>
-            </form>
+            {/* Formulário */}
+            <div className="mt-10 bg-white p-6 rounded-lg shadow-lg">
+                <h2 className="text-2xl font-semibold mb-4 text-gray-800">
+                    {editingId ? "Editar Empresa" : "Adicionar Empresa"}
+                </h2>
+                <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <input
+                        name="empresa"
+                        type="text"
+                        value={formData.empresa}
+                        onChange={handleInputChange}
+                        placeholder="Empresa"
+                        className="border p-2 rounded"
+                        required
+                    />
+                    <input
+                        name="nome"
+                        type="text"
+                        value={formData.nome}
+                        onChange={handleInputChange}
+                        placeholder="Nome"
+                        className="border p-2 rounded"
+                        required
+                    />
+                    <input
+                        name="tipo_contrato"
+                        type="text"
+                        value={formData.tipo_contrato}
+                        onChange={handleInputChange}
+                        placeholder="Tipo de Contrato"
+                        className="border p-2 rounded"
+                        required
+                    />
+                    <button
+                        type="submit"
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition"
+                    >
+                        {editingId ? "Atualizar" : "Adicionar"}
+                    </button>
+                </form>
+            </div>
 
             {/* Tabela de Empresas */}
-            <div className="overflow-hidden border border-gray-200 rounded-lg">
-                <table className="w-full table-auto">
-                    <thead className="bg-gray-50 text-gray-700 uppercase text-sm tracking-wider">
+            <div className="mt-10 bg-white p-6 rounded-lg shadow-lg">
+                <h2 className="text-2xl font-semibold mb-4 text-gray-800">Lista de Empresas</h2>
+                <table className="w-full border-collapse rounded-lg">
+                    <thead className="bg-gray-200">
                         <tr>
                             <th className="px-6 py-3 text-left font-medium">Empresa</th>
                             <th className="px-6 py-3 text-left font-medium">Nome</th>
@@ -147,27 +166,16 @@ const Empresas = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {empresas.map((empresa, index) => (
-                            <tr
-                                key={empresa.id}
-                                className={`${
-                                    index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                                } hover:bg-gray-100 transition-all duration-200`}
-                            >
-                                <td className="px-6 py-4 text-gray-800">{empresa.empresa}</td>
-                                <td className="px-6 py-4 text-gray-700">{empresa.nome}</td>
-                                <td className="px-6 py-4 text-gray-700">{empresa.tipo_contrato}</td>
-                                <td className="px-6 py-4 flex gap-2">
-                                    <button
-                                        onClick={() => handleEdit(empresa)}
-                                        className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition"
-                                    >
+                        {empresas.map((empresa) => (
+                            <tr key={empresa.id} className="border-t hover:bg-gray-100 transition">
+                                <td className="px-6 py-4">{empresa.empresa}</td>
+                                <td className="px-6 py-4">{empresa.nome}</td>
+                                <td className="px-6 py-4">{empresa.tipo_contrato}</td>
+                                <td className="px-6 py-4 flex justify-center space-x-2">
+                                    <button onClick={() => handleEdit(empresa)} className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition">
                                         Editar
                                     </button>
-                                    <button
-                                        onClick={() => handleDelete(empresa.id)}
-                                        className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition"
-                                    >
+                                    <button onClick={() => handleDelete(empresa.id)} className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition">
                                         Excluir
                                     </button>
                                 </td>
