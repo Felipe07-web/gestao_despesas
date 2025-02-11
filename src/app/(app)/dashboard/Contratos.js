@@ -154,6 +154,7 @@ const Contratos = () => {
                             <th className="px-6 py-3 text-left font-medium">Ações</th>
                         </tr>
                     </thead>
+                    
                     <tbody>
                         {contratos.map((contrato, index) => (
                             <tr key={contrato.id} className={`${index % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-gray-100 transition-all duration-200`}>
