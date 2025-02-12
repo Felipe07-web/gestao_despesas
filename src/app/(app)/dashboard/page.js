@@ -90,22 +90,22 @@ const Dashboard = () => {
                                     <div className="bg-white p-6 rounded-lg shadow-md flex items-center gap-4">
                                         <FaWallet size={36} className="text-green-600" />
                                         <div>
-                                            <p className="text-gray-600 text-sm">Saldo Atual</p>
-                                            <h2 className="text-xl font-bold text-gray-800">R$ 12.500,00</h2>
+                                            <p className="text-black-600  ttext-sm">Saldo Atual</p>
+                                            
                                         </div>
                                     </div>
                                     <div className="bg-white p-6 rounded-lg shadow-md flex items-center gap-4">
                                         <FaChartPie size={36} className="text-red-600" />
                                         <div>
-                                            <p className="text-gray-600 text-sm">Gastos no Mês</p>
-                                            <h2 className="text-xl font-bold text-gray-800">R$ 3.200,00</h2>
+                                            <p className="text-black-600 text-sm ">Gastos no Mês</p>
+                                            
                                         </div>
                                     </div>
                                     <div className="bg-white p-6 rounded-lg shadow-md flex items-center gap-4">
                                         <FaPlusCircle size={36} className="text-blue-600" />
                                         <div>
-                                            <p className="text-gray-600 text-sm">Receitas no Mês</p>
-                                            <h2 className="text-xl font-bold text-gray-800">R$ 5.500,00</h2>
+                                            <p className="text-black-600 text-sm">Receitas no Mês</p>
+                                            
                                         </div>
                                     </div>
                                 </div>
